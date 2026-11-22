@@ -26,3 +26,7 @@ NTFSTest/
 
 # 图标集可由 scripts/make-icon.swift 重建, 仅入库 .icns
 Resources/AppIcon.iconset/
+
+# 产品文档仅本地保留 (审计/过程档案), 不入库
+ docs/
+docs/
