@@ -93,4 +93,7 @@ foot.draw(at: NSPoint(x: W / 2 - footSize.width / 2, y: 46))
 
 let png = rep.representation(using: .png, properties: [:])!
 try! png.write(to: outFile)
-print("生成: \(outFile.path)")
+// ⚠️ 本脚本只输出 72dpi PNG。144dpi 元数据 (@2x 约定) 由
+// ntfsmate-dmg-layout.sh prepare 步骤用 sips 强制写入 —
+// Finder 按 pt 渲染背景图, 无 DPI 时 1px=1pt 会放大一倍
+print("生成: \(outFile.path) (72dpi, 由 dmg-layout prepare 写入 144dpi)")

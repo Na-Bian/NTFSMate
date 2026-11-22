@@ -28,8 +28,13 @@ case "$ACTION" in
         mkdir -p "$DMG_ROOT/.background"
         cp "$BACKGROUND_SOURCE" "$DMG_ROOT/.background/$BACKGROUND_NAME"
         xattr -c "$DMG_ROOT/.background/$BACKGROUND_NAME" 2>/dev/null || true
+        # 强制 144dpi (@2x): Finder 按 pt 渲染背景图, 72dpi 会让整图放大一倍
+        # sips 写入成功也会打印 "Error 2" 虚警并以非零退出 — 容忍之, 以下 DPI_W 校验才是真关卡
+        sips -s dpiWidth=144 -s dpiHeight=144 "$DMG_ROOT/.background/$BACKGROUND_NAME" >/dev/null 2>&1 || true
+        DPI_W=$(sips -g dpiWidth "$DMG_ROOT/.background/$BACKGROUND_NAME" | awk '/dpiWidth/{print $2}')
+        [ "$DPI_W" = "144.000" ] || fail "背景图 DPI 写入失败 (got $DPI_W)"
         chflags hidden "$DMG_ROOT/.background" 2>/dev/null || true
-        echo '[dmg-layout] 背景图已装入 stage'
+        echo '[dmg-layout] 背景图已装入 stage (144dpi)'
         ;;
     apply)
         OSASCRIPT_BIN="${OSASCRIPT_BIN:-/usr/bin/osascript}"
