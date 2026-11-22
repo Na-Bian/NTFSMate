@@ -372,7 +372,7 @@ struct PanelView: View {
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .glassEffect(in: Capsule())
+            .ntfsGlassEffect(in: Capsule())
 
             Spacer()
             Button {
@@ -381,7 +381,7 @@ struct PanelView: View {
                 Label(L10n.t("diag.title"), systemImage: "stethoscope")
                     .labelStyle(.titleAndIcon)
             }
-            .buttonStyle(.glass)
+            .ntfsGlassButton()
             .controlSize(.small)
             .focusable(false)
         }
@@ -389,7 +389,7 @@ struct PanelView: View {
 
     // 卷列表: 玻璃卡片行
     private var volumeSection: some View {
-        GlassEffectContainer(spacing: 8) {
+        ntfsGlassContainer(spacing: 8) {
             VStack(spacing: 8) {
                 if model.volumes.isEmpty {
                     VStack(spacing: 6) {
@@ -449,12 +449,12 @@ struct PanelView: View {
     private var footer: some View {
         HStack {
             Button(L10n.t("footer.about")) { showAboutPanel() }
-                .buttonStyle(.glass)
+                .ntfsGlassButton()
                 .controlSize(.small)
                 .focusable(false)
             Spacer()
             Button(L10n.t("footer.quit")) { NSApp.terminate(nil) }
-                .buttonStyle(.glass)
+                .ntfsGlassButton()
                 .controlSize(.small)
                 .focusable(false)
         }
@@ -520,7 +520,7 @@ struct EnvironmentWarningCard: View {
                 } label: {
                     Label(L10n.t("env.download"), systemImage: "arrow.down.circle")
                 }
-                .buttonStyle(.glassProminent)
+                .ntfsGlassProminentButton()
                 .controlSize(.small)
                 .focusable(false)
 
@@ -530,23 +530,20 @@ struct EnvironmentWarningCard: View {
                     Label(brewCopied ? L10n.t("env.brew.copied") : L10n.t("env.brew.copy"),
                           systemImage: brewCopied ? "checkmark" : "doc.on.doc")
                 }
-                .buttonStyle(.glass)
+                .ntfsGlassButton()
                 .controlSize(.small)
                 .focusable(false)
 
                 Spacer()
                 Button(L10n.t("env.recheck")) { model.checkEnvironment() }
-                    .buttonStyle(.glass)
+                    .ntfsGlassButton()
                     .controlSize(.small)
                     .focusable(false)
             }
         }
         .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.orange.opacity(0.10))
-                .strokeBorder(Color.orange.opacity(0.35), lineWidth: 0.5)
-        )
+        .background(Color.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: 12))
+        .ntfsStrokeBorder(RoundedRectangle(cornerRadius: 12), Color.orange.opacity(0.35))
     }
 }
 
@@ -563,10 +560,8 @@ struct VolumeCard: View {
             .font(.caption2.weight(.semibold))
             .padding(.horizontal, 7)
             .padding(.vertical, 2)
-            .background(
-                Capsule().fill(badgeColor.opacity(0.16))
-                    .strokeBorder(badgeColor.opacity(0.35), lineWidth: 0.5)
-            )
+            .background(badgeColor.opacity(0.16), in: Capsule())
+            .ntfsStrokeBorder(Capsule(), badgeColor.opacity(0.35))
             .foregroundStyle(badgeColor)
     }
 
@@ -628,11 +623,11 @@ struct VolumeCard: View {
             HStack(spacing: 6) {
                 if isMounted {
                     Button(L10n.t("volume.action.unmount")) { model.unmount(vol) }
-                        .buttonStyle(.glass)
+                        .ntfsGlassButton()
                         .disabled(model.busyBSDs.contains(vol.bsdName))
                 } else {
                     Button(L10n.t("volume.action.mount")) { model.startMountIntent(bsd: vol.bsdName, isAutomatic: false) }
-                        .buttonStyle(.glassProminent)
+                        .ntfsGlassProminentButton()
                         .disabled(model.busyBSDs.contains(vol.bsdName))
                 }
                 Button {
@@ -641,7 +636,7 @@ struct VolumeCard: View {
                     Image(systemName: "eject")
                 }
                 .accessibilityLabel(L10n.t("volume.action.eject.icon.accessibility"))
-                .buttonStyle(.glass)
+                .ntfsGlassButton()
                 .disabled(model.busyBSDs.contains(vol.wholeDiskBSD))
             }
             .controlSize(.small)
@@ -667,11 +662,11 @@ struct DiagnosticsSheet: View {
                 Text(L10n.t("diag.title")).font(.headline)
                 Spacer()
                 Button(L10n.t("diag.refresh")) { model.runDiagnose() }
-                    .buttonStyle(.glassProminent)
+                    .ntfsGlassProminentButton()
                     .controlSize(.small)
                     .focusable(false)
                 Button(L10n.t("diag.close")) { dismiss() }
-                    .buttonStyle(.glass)
+                    .ntfsGlassButton()
                     .controlSize(.small)
                     .focusable(false)
             }
@@ -703,7 +698,7 @@ struct DiagnosticsSheet: View {
                         }
                         .background(Color.primary.opacity(0.04))
                         .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .onChange(of: model.autoLog) { _, _ in
+                        .onChange(of: model.autoLog) { _ in
                             proxy.scrollTo("logBottom", anchor: .bottom)
                         }
                     }

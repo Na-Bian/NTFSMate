@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "NTFSMate",
-    platforms: [.macOS(.v26)],
+    platforms: [.macOS(.v13)],
     targets: [
         .target(name: "NTFSShared"),
         .executableTarget(name: "NTFSMateApp", dependencies: ["NTFSShared"]),
