@@ -12,9 +12,15 @@ APP="$BUILD/NTFSMate.app"
 
 echo "==> swift build (release)"
 cd "$ROOT"
-swift build -c release 2>&1 | tail -3
+# 部署目标保持 macOS 13, 但把实际 SDK 版本写入 LC_BUILD_VERSION ——
+# AppKit 按"链接 SDK 边界"判定系统外观 (Liquid Glass 窗口设计)。
+# 裸 swift build 会把 sdk 字段写成部署目标, 导致整个应用回退旧版窗口设计。
+MACOS_MIN_SYSTEM_VERSION="13.0"
+SDK_VERSION="$(xcrun --sdk macosx --show-sdk-version)"
+SDK_LINKER_FLAGS=(-Xlinker -platform_version -Xlinker macos -Xlinker "$MACOS_MIN_SYSTEM_VERSION" -Xlinker "$SDK_VERSION")
+swift build -c release "${SDK_LINKER_FLAGS[@]}" 2>&1 | tail -3
 
-BIN="$(swift build -c release --show-bin-path)"
+BIN="$(swift build -c release "${SDK_LINKER_FLAGS[@]}" --show-bin-path)"
 
 echo "==> 组装应用包结构"
 # 构建号 = git 提交数 (版本元数据单一来源, 可用 NTFSMATE_BUILD 覆盖)

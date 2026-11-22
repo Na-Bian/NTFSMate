@@ -23,8 +23,8 @@ struct NTFSMateApp: App {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // LSUIElement 已隐藏 Dock 图标; 双保险
-        NSApp.setActivationPolicy(.accessory)
+        // 注意: 不要在此调用 setActivationPolicy(.accessory) —— LSUIElement 已声明菜单栏形态,
+        // 运行时再切换策略会让 macOS 26/27 的窗口走旧版 chrome (红绿灯失去新样式)
         // 关键: 卷监控必须在启动时激活, 不能等用户首次打开面板
         // (MenuBarExtra 窗格内容是懒加载的, 不点面板 AppModel 就不存在)
         _ = AppModel.shared
@@ -479,15 +479,13 @@ struct PanelView: View {
 
         // 记录既有窗口, 创建后定位关于窗口: 抬升层级到菜单栏面板之上并抢 key
         // (抢 key 会让 MenuBarExtra 面板自动收起)
-        // 记录既有窗口, 创建后定位关于窗口: 抬升到菜单栏面板之上并抢 key
-        // (抢 key 会让 MenuBarExtra 面板自动收起)
+        // 记录既有窗口, 创建后定位关于窗口: 抢 key (MenuBarExtra 面板会自动收起)
         let before = Set(NSApp.windows.map { ObjectIdentifier($0) })
         NSApp.orderFrontStandardAboutPanel(options: options)
         DispatchQueue.main.async {
             if let about = NSApp.windows.first(where: {
                 !before.contains(ObjectIdentifier($0)) && $0.isVisible
             }) {
-                about.level = NSWindow.Level(rawValue: 2_000)
                 about.makeKeyAndOrderFront(nil)
             }
         }
