@@ -14,6 +14,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 APP_NAME="NTFSMate"
 fail() { echo "[release] error: $*" >&2; exit 1; }
+BACKGROUND_NAME="NTFSMate-dmg-background.png"
 APP_VERSION="${NTFSMATE_VERSION:-0.4.0}"
 ARCH="$(uname -m | sed 's/x86_64/x86_64/;s/arm64/arm64/')"
 OUTPUT_DIR="${1:-$ROOT/dist/release}"
@@ -100,10 +101,26 @@ if ! hdiutil attach "$RW_DMG" -mountpoint "$MOUNT_DIR" -nobrowse -quiet; then
 fi
 ATTACHED=1
 
-# 3) 应用 Finder 布局 (AppleScript), 等待 .DS 写盘
-bash "$HERE/ntfsmate-dmg-layout.sh" apply "$MOUNT_DIR"
-sleep 2
+# 3) 应用 Finder 布局 (AppleScript)。Finder 异步写 .DS_Store, 必须验证落盘,
+#    否则 convert 产出的 DMG 没有背景布局 (实测踩坑)
+LAYOUT_OK=0
+for attempt in 1 2 3; do
+    bash "$HERE/ntfsmate-dmg-layout.sh" apply "$MOUNT_DIR"
+    sync
+    for _ in $(seq 1 10); do
+        [ -f "$MOUNT_DIR/.DS_Store" ] && break
+        sleep 1
+    done
+    if [ -f "$MOUNT_DIR/.DS_Store" ]; then
+        echo "[release] Finder 布局已落盘 (尝试 $attempt)"
+        LAYOUT_OK=1
+        break
+    fi
+    echo "[release] 布局未落盘, 重试 ($attempt/3)..."
+done
+[ "$LAYOUT_OK" = "1" ] || fail ".DS_Store 迟迟未落盘, Finder 布局失败"
 sync
+sleep 1
 
 # 4) 卸载 (必须成功, 否则 convert 会拷出未写盘的卷) 并转换为压缩 UDZO
 if ! hdiutil detach "$MOUNT_DIR" -quiet; then
@@ -112,6 +129,18 @@ fi
 ATTACHED=0
 if ! hdiutil convert "$RW_DMG" -format UDZO -o "$APP_DMG" -ov >/dev/null; then
     fail "hdiutil convert 失败"
+fi
+
+# 5) 终验: 挂载最终 DMG, 确认 .DS_Store 与背景图都在
+FINAL_VOL="$(mktemp -d "${TMPDIR:-/tmp}/ntfsmate-verify.XXXXXX")"
+if hdiutil attach "$APP_DMG" -mountpoint "$FINAL_VOL" -nobrowse -quiet; then
+    [ -f "$FINAL_VOL/.DS_Store" ] || { hdiutil detach "$FINAL_VOL" -quiet || true; fail "最终 DMG 缺少 .DS_Store (布局未持久化)"; }
+    [ -f "$FINAL_VOL/.background/$BACKGROUND_NAME" ] || { hdiutil detach "$FINAL_VOL" -quiet || true; fail "最终 DMG 缺少背景图"; }
+    hdiutil detach "$FINAL_VOL" -quiet
+    rmdir "$FINAL_VOL"
+    echo "[release] 最终 DMG 布局验证通过"
+else
+    fail "最终 DMG 无法挂载验证"
 fi
 
 echo "[release] SHA-256 校验值"
