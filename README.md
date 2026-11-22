@@ -10,7 +10,7 @@
 
 在 macOS 上读写外接 NTFS 磁盘。插入磁盘后自动以读写模式挂载，安全弹出全程数据保护。
 
-![platform](https://img.shields.io/badge/platform-macOS%2026%2B-blue) ![swift](https://img.shields.io/badge/Swift-6-orange) ![arch](https://img.shields.io/badge/arch-arm64%20%7C%20Intel-lightgrey)
+![platform](https://img.shields.io/badge/platform-macOS%2013%2B-blue) ![swift](https://img.shields.io/badge/Swift-6-orange) ![arch](https://img.shields.io/badge/arch-arm64%20%7C%20Intel-lightgrey)
 
 ### 功能
 
@@ -25,7 +25,7 @@
 
 | 组件 | 要求 |
 |---|---|
-| macOS | 26+ (Liquid Glass UI) |
+| macOS | 13+；macOS 26+ 默认启用 Liquid Glass UI，低版本自动回退兼容样式 |
 | 架构 | arm64 (Apple Silicon) / x86_64 |
 | [FUSE-T](https://www.fuse-t.org) | **必须**，用户自行安装（非商业使用免费） |
 
@@ -91,7 +91,7 @@ and a privileged-helper architecture.
 
 ### Requirements
 
-- macOS 26+, Apple Silicon (or Intel)
+- macOS 13+ (Liquid Glass UI on macOS 26+), Apple Silicon (or Intel)
 - [FUSE-T](https://www.fuse-t.org) runtime installed by the user (free for non-commercial use)
 
 ### Build
