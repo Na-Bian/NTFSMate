@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.ntfsmate.helper</string>
+    <!-- SMAppService daemon: BundleProgram 相对应用包根目录 -->
+    <key>BundleProgram</key>
+    <string>Contents/MacOS/ntfs-helper</string>
+    <key>MachServices</key>
+    <dict>
+        <key>com.ntfsmate.helper</key>
+        <true/>
+    </dict>
+    <!-- on-demand: 有 XPC 连接时才启动; helper 不设 KeepAlive -->
+    <key>ProcessType</key>
+    <string>Interactive</string>
+    <key>StandardErrorPath</key>
+    <string>/var/log/ntfsmate-helper.err</string>
+    <key>StandardOutPath</key>
+    <string>/var/log/ntfsmate-helper.out</string>
+</dict>
+</plist>

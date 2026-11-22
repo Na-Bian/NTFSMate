@@ -1,0 +1,126 @@
+/* NTFSMate — English */
+
+/* helper status */
+"helper.status.initial" = "Not checked";
+"helper.status.enabled" = "Approved & running";
+"helper.status.pending" = "Approval pending — System Settings → Login Items & Extensions";
+"helper.status.notFound" = "App bundle incomplete";
+"helper.status.unknown" = "Unknown";
+"helper.status.noResponse" = "No response";
+
+/* Volume list */
+"volume.empty.title" = "No NTFS volumes detected";
+"volume.empty.subtitle" = "Connect an external NTFS disk or attach a disk image";
+"volume.badge.image" = "Image";
+"volume.state.rw" = "Read-Write";
+"volume.state.ro" = "Read-Only";
+"volume.state.mounted" = "Mounted";
+"volume.state.unmounted" = "Not mounted";
+"volume.action.mount" = "Mount RW";
+"volume.action.unmount" = "Unmount";
+"volume.action.eject.icon.accessibility" = "Eject whole disk";
+
+/* Settings */
+"settings.automount.title" = "Mount read-write automatically";
+"settings.automount.subtitle" = "Take over NTFS volumes on insertion";
+"settings.login.title" = "Launch at login";
+"settings.login.subtitle" = "Run automatically after you log in";
+
+/* Footer / About */
+"footer.about" = "About NTFSMate";
+"footer.quit" = "Quit NTFSMate";
+"about.tagline" = "Read & write NTFS drives on macOS";
+"about.attribution" = "Built on the open-source ntfs-3g and FUSE-T projects";
+"about.copyright" = "Copyright © 2026 NaBian. All rights reserved.";
+
+/* Diagnostics */
+"diag.title" = "Diagnostics";
+"diag.refresh" = "Refresh";
+"diag.close" = "Close";
+"diag.helperState" = "helper status";
+"diag.runLog" = "Run log";
+"diag.tapRefresh" = "(tap Refresh)";
+"diag.empty" = "(none)";
+
+/* Run log */
+"log.detected" = "NTFS volume detected: %@";
+"log.diskAppeared" = "Disk appeared: %@ kind=%@";
+"log.automount.off" = "Auto-mount is off; leaving volume read-only/unmounted";
+"log.automount.on" = "Auto-mount enabled";
+"log.automount.disabled" = "Auto-mount disabled";
+"log.compensate" = "Compensation scan: taking over %@";
+"log.mount.ok" = "✅ Mounted read-write: %@";
+"log.mount.fail" = "❌ Mount failed: %@";
+"log.unmount.ok" = "✅ Unmounted %@";
+"log.unmount.fail" = "❌ Unmount failed: %@";
+"log.eject.ok" = "✅ %@";
+"log.eject.fail" = "❌ Eject failed: %@";
+"log.register.fail" = "Registration failed: %@";
+"log.unregister.fail" = "Unregistration failed: %@";
+"log.loginitem.fail" = "Login item failed: %@";
+"log.list.fail" = "Volume listing failed: %@";
+"log.diag.fail" = "Diagnostics failed: %@";
+"log.helper.noresponse" = "helper not responding: %@";
+"log.diag.received" = "Diagnostics (%d chars received):";
+
+/* Notifications */
+"notify.title" = "NTFSMate";
+"notify.mount.ok" = "NTFS volume mounted read-write";
+"notify.mount.fail" = "Auto-mount failed: %@";
+"notify.eject.ok" = "Disk safely ejected — you can unplug it now";
+
+/* Errors (helper error prefix mapping) */
+"err.busy" = "Volume busy";
+"err.policy" = "Policy denied";
+"err.notManaged" = "Not managed";
+"err.mediaGone" = "Media gone";
+"err.internal" = "Internal error";
+"err.resolve" = "Device resolution failed";
+"err.connInterrupted" = "helper connection interrupted";
+"err.timeout" = "Request timed out";
+
+/* helper-side errors (composed per request language) */
+"err.busy.unmountNative" = "Native read-only volume unmount failed (possibly busy): %@";
+"err.busy.nativeNotNTFS" = "Volume mounted at %@ is not a native NTFS mount; refusing takeover";
+"err.busy.unmountRW" = "Non-forced unmount failed (volume may be busy; mount kept): %@";
+"err.busy.eject" = "Eject failed: a volume on this disk is busy";
+"err.policy.denied" = "Only external writable NTFS data volumes are managed (internal/read-only/non-external devices are ignored)";
+"err.mediaGone.afterUnmount" = "Device disappeared after unmounting the native volume: %@";
+"err.internal.mountpointFail" = "Failed to create mount point (%@)";
+"err.internal.spawnFail" = "Failed to launch ntfs-3g: %@";
+"err.internal.earlyExit" = "ntfs-3g exited early: %@";
+"err.internal.timeout" = "Mount not ready within 20s: %@";
+"err.internal.tooMany" = "Too many mount point name conflicts";
+"err.internal.deviceStillThere" = "Device still present after eject: %@";
+"err.internal.noNTFS3G" = "ntfs-3g missing from app bundle (see Diagnostics)";
+"err.notManaged.mounted" = "Volume %@ is not mounted; nothing to unmount";
+"err.notManaged.unmanaged" = "Volume %@ is not managed by this helper";
+"err.resolve.notFound" = "Device not found or detached: %@";
+"err.resolve.notNTFS" = "Device is not an NTFS volume: %@";
+"err.resolve.malformed" = "Invalid device name: %@";
+"err.resolve.missing" = "Unexpected diskutil output (%@ missing)";
+"unmount.done" = "Unmounted";
+"eject.done" = "Whole disk ejected: %@";
+
+/* Diagnostic labels (helper side) */
+"diag.present" = "present";
+"diag.missing" = "missing";
+"diag.selfExec" = "Self executable";
+"diag.bundle" = "App bundle";
+"diag.resourcesDir" = "Resources dir exists";
+"diag.ntfsDir" = "ntfs3g dir exists";
+"diag.candidate" = "ntfs-3g candidate path";
+"diag.executable" = "executable";
+"diag.parsed" = "ntfs-3g (resolved)";
+"diag.exit" = "exit";
+"diag.systemPath" = "system path";
+"diag.imageMap" = "Image map";
+"diag.managed" = "Managed state";
+
+/* Environment check (FUSE-T runtime) */
+"env.missing.title" = "FUSE-T runtime not found";
+"env.missing.subtitle" = "NTFSMate needs FUSE-T to mount NTFS volumes. Download and install it from the official site, then tap Re-check.";
+"env.download" = "Download";
+"env.recheck" = "Re-check";
+"env.brew.copy" = "Copy Homebrew command";
+"env.brew.copied" = "Copied";

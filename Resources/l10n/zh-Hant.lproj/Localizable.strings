@@ -1,0 +1,126 @@
+/* NTFSMate — 繁體中文 */
+
+/* helper 狀態 */
+"helper.status.initial" = "未查詢";
+"helper.status.enabled" = "已核准執行";
+"helper.status.pending" = "等待核准 — 系統設定 → 登入項目與延伸功能";
+"helper.status.notFound" = "應用程式套件不完整";
+"helper.status.unknown" = "未知";
+"helper.status.noResponse" = "無回應";
+
+/* 卷列表 */
+"volume.empty.title" = "未偵測到 NTFS 卷";
+"volume.empty.subtitle" = "連接外接 NTFS 磁碟或掛載磁碟映像";
+"volume.badge.image" = "映像檔";
+"volume.state.rw" = "讀寫";
+"volume.state.ro" = "唯讀";
+"volume.state.mounted" = "已掛載";
+"volume.state.unmounted" = "未掛載";
+"volume.action.mount" = "讀寫掛載";
+"volume.action.unmount" = "卸載";
+"volume.action.eject.icon.accessibility" = "退出整個磁碟";
+
+/* 設定 */
+"settings.automount.title" = "自動以讀寫模式掛載";
+"settings.automount.subtitle" = "插入 NTFS 卷時自動接管";
+"settings.login.title" = "登入時啟動";
+"settings.login.subtitle" = "登入後自動執行";
+
+/* 頁尾 / 關於 */
+"footer.about" = "關於 NTFSMate";
+"footer.quit" = "結束 NTFSMate";
+"about.tagline" = "macOS 外接 NTFS 磁碟讀寫工具";
+"about.attribution" = "NTFSMate 基於開源專案 ntfs-3g 和 FUSE-T";
+"about.copyright" = "Copyright © 2026 NaBian. 版權所有。";
+
+/* 診斷 */
+"diag.title" = "診斷";
+"diag.refresh" = "重新整理";
+"diag.close" = "關閉";
+"diag.helperState" = "helper 狀態";
+"diag.runLog" = "執行日誌";
+"diag.tapRefresh" = "(點一下重新整理)";
+"diag.empty" = "(暫無)";
+
+/* 執行日誌 */
+"log.detected" = "偵測到 NTFS 卷接入: %@";
+"log.diskAppeared" = "磁碟接入: %@ kind=%@";
+"log.automount.off" = "自動掛載未開啟, 保持唯讀/未掛載狀態";
+"log.automount.on" = "自動掛載已開啟";
+"log.automount.disabled" = "自動掛載已關閉";
+"log.compensate" = "補償掃描: 接管已接入的 %@";
+"log.mount.ok" = "✅ 讀寫掛載成功: %@";
+"log.mount.fail" = "❌ 掛載失敗: %@";
+"log.unmount.ok" = "✅ 已卸載 %@";
+"log.unmount.fail" = "❌ 卸載失敗: %@";
+"log.eject.ok" = "✅ %@";
+"log.eject.fail" = "❌ 退出失敗: %@";
+"log.register.fail" = "註冊失敗: %@";
+"log.unregister.fail" = "註銷失敗: %@";
+"log.loginitem.fail" = "登入項目操作失敗: %@";
+"log.list.fail" = "列卷失敗: %@";
+"log.diag.fail" = "診斷失敗: %@";
+"log.helper.noresponse" = "helper 無回應: %@";
+"log.diag.received" = "診斷 (收到 %d 字元):";
+
+/* 通知 */
+"notify.title" = "NTFSMate";
+"notify.mount.ok" = "NTFS 卷已以讀寫模式掛載";
+"notify.mount.fail" = "自動掛載失敗: %@";
+"notify.eject.ok" = "磁碟已安全退出, 可以拔除";
+
+/* 錯誤 (helper 錯誤前綴映射) */
+"err.busy" = "卷被占用";
+"err.policy" = "策略拒絕";
+"err.notManaged" = "未託管";
+"err.mediaGone" = "媒體消失";
+"err.internal" = "內部錯誤";
+"err.resolve" = "裝置解析失敗";
+"err.connInterrupted" = "helper 連線中斷";
+"err.timeout" = "請求逾時";
+
+/* helper 端錯誤 (依請求語言組裝) */
+"err.busy.unmountNative" = "原生唯讀卷卸載失敗 (可能被占用): %@";
+"err.busy.nativeNotNTFS" = "卷已掛載於 %@ 且非 NTFS 原生掛載, 不予接管";
+"err.busy.unmountRW" = "非強制卸載失敗 (卷可能被占用, 已保留掛載): %@";
+"err.busy.eject" = "整個磁碟退出失敗: 同碟上有卷正被占用";
+"err.policy.denied" = "僅接管外接可寫媒體的 NTFS 資料卷 (內建碟/唯讀媒體/非外接裝置不接管)";
+"err.mediaGone.afterUnmount" = "卸載原生卷後裝置消失: %@";
+"err.internal.mountpointFail" = "建立掛載點失敗 (%@)";
+"err.internal.spawnFail" = "ntfs-3g 啟動失敗: %@";
+"err.internal.earlyExit" = "ntfs-3g 提前退出: %@";
+"err.internal.timeout" = "20 秒內掛載未就緒: %@";
+"err.internal.tooMany" = "掛載點命名衝突過多";
+"err.internal.deviceStillThere" = "退出後裝置仍存在: %@";
+"err.internal.noNTFS3G" = "應用程式套件缺少 ntfs-3g (診斷頁可查)";
+"err.notManaged.mounted" = "卷 %@ 未掛載, 無需卸載";
+"err.notManaged.unmanaged" = "卷 %@ 未由本 helper 託管";
+"err.resolve.notFound" = "裝置不存在或已分離: %@";
+"err.resolve.notNTFS" = "裝置不是 NTFS 卷: %@";
+"err.resolve.malformed" = "不合法的裝置名稱: %@";
+"err.resolve.missing" = "diskutil 輸出異常 (%@ 缺失)";
+"unmount.done" = "已卸載";
+"eject.done" = "整個磁碟已退出: %@";
+
+/* 診斷標籤 (helper 端) */
+"diag.present" = "存在";
+"diag.missing" = "缺失";
+"diag.selfExec" = "自身可執行";
+"diag.bundle" = "應用程式套件";
+"diag.resourcesDir" = "Resources 目錄存在";
+"diag.ntfsDir" = "ntfs3g 目錄存在";
+"diag.candidate" = "ntfs-3g 候選路徑";
+"diag.executable" = "可執行";
+"diag.parsed" = "ntfs-3g (解析結果)";
+"diag.exit" = "退出";
+"diag.systemPath" = "系統路徑";
+"diag.imageMap" = "映像映射";
+"diag.managed" = "託管狀態";
+
+/* 環境檢測 (FUSE-T 執行環境) */
+"env.missing.title" = "未偵測到 FUSE-T 執行環境";
+"env.missing.subtitle" = "NTFSMate 需要 FUSE-T 才能掛載 NTFS 卷。請從官網下載安裝，完成後點「重新檢測」。";
+"env.download" = "前往下載";
+"env.recheck" = "重新檢測";
+"env.brew.copy" = "複製 Homebrew 指令";
+"env.brew.copied" = "已複製";

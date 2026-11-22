@@ -1,0 +1,28 @@
+# --- 构建产物 ---
+.build/
+build/
+*.o
+*.dSYM
+
+# --- 第三方依赖 (构建时按锁定版本下载, 不入库) ---
+third_party/
+!third_party/README.md
+
+# --- 本地测试素材 ---
+NTFSTest/
+*.img
+*.dmg
+
+# --- 系统与编辑器 ---
+.DS_Store
+.swiftpm/
+*.xcodeproj
+.vscode/
+.idea/
+
+# --- 临时 ---
+*.log
+/tmp/
+
+# 图标集可由 scripts/make-icon.swift 重建, 仅入库 .icns
+Resources/AppIcon.iconset/
