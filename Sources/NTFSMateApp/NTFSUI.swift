@@ -24,16 +24,6 @@ extension View {
         }
     }
 
-    /// 玻璃背景: 26+ 用 .glassEffect(in:), 低版本回退材质底
-    @ViewBuilder
-    func ntfsGlassEffect<S: Shape>(in shape: S) -> some View {
-        if #available(macOS 26.0, *) {
-            self.glassEffect(in: shape)
-        } else {
-            self.background(shape.fill(.regularMaterial))
-        }
-    }
-
     /// 描边: 13 安全实现 (Shape.strokeBorder 的 ShapeStyle 泛型重载是 macOS 14+)
     func ntfsStrokeBorder<S: Shape>(_ shape: S, _ color: Color, lineWidth: CGFloat = 0.5) -> some View {
         overlay(
@@ -44,13 +34,26 @@ extension View {
         )
     }
 
-    /// 玻璃容器: 26+ 用 GlassEffectContainer 分组联动, 低版本原样呈现
-    @ViewBuilder
-    func ntfsGlassContainer(spacing: CGFloat, @ViewBuilder content: () -> some View) -> some View {
-        if #available(macOS 26.0, *) {
-            GlassEffectContainer(spacing: spacing) { content() }
-        } else {
-            content()
-        }
+    /// 玻璃衬底: 26+ 托管原生 NSGlassEffectView (GlassSurfaceView),
+    /// 低版本回退 NSVisualEffectView 材质 —— 由 GlassSurfaceView 内部处理
+    func glassSurfaceBackground(cornerRadius: CGFloat,
+                                style: GlassSurfaceView.Style = .interactive) -> some View {
+        background(GlassSurfaceBackground(cornerRadius: cornerRadius, style: style))
+    }
+}
+
+/// SwiftUI 桥接: 把 AppKit 玻璃表面作为衬底视图
+struct GlassSurfaceBackground: NSViewRepresentable {
+    var cornerRadius: CGFloat
+    var style: GlassSurfaceView.Style = .interactive
+
+    func makeNSView(context: Context) -> GlassSurfaceView {
+        let view = GlassSurfaceView(style: style, backingOnly: true)
+        view.cornerRadiusOverride = cornerRadius
+        return view
+    }
+
+    func updateNSView(_ view: GlassSurfaceView, context: Context) {
+        view.cornerRadiusOverride = cornerRadius
     }
 }

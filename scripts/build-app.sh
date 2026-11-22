@@ -17,6 +17,8 @@ swift build -c release 2>&1 | tail -3
 BIN="$(swift build -c release --show-bin-path)"
 
 echo "==> 组装应用包结构"
+# 构建号 = git 提交数 (版本元数据单一来源, 可用 NTFSMATE_BUILD 覆盖)
+BUILD_NUMBER="${NTFSMATE_BUILD:-$(git rev-list --count HEAD 2>/dev/null || echo 1)}"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" \
          "$APP/Contents/Library/LaunchDaemons" \
@@ -27,6 +29,8 @@ mkdir -p "$APP/Contents/MacOS" \
 cp "$BIN/NTFSMateApp"  "$APP/Contents/MacOS/NTFSMate"
 cp "$BIN/NTFSHelper"   "$APP/Contents/MacOS/ntfs-helper"
 cp "$ROOT/Resources/app-Info.plist" "$APP/Contents/Info.plist"
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$APP/Contents/Info.plist"
+echo "  构建号: $BUILD_NUMBER"
 cp "$ROOT/Resources/com.ntfsmate.helper.plist" "$APP/Contents/Library/LaunchDaemons/com.ntfsmate.helper.plist"
 
 echo "==> 打包 ntfs-3g (运行时套件; mkntfs 等格式化工具不随发行包携带)"

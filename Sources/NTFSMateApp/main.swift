@@ -372,7 +372,7 @@ struct PanelView: View {
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
-            .ntfsGlassEffect(in: Capsule())
+            .glassSurfaceBackground(cornerRadius: 14)
 
             Spacer()
             Button {
@@ -389,8 +389,7 @@ struct PanelView: View {
 
     // 卷列表: 玻璃卡片行
     private var volumeSection: some View {
-        ntfsGlassContainer(spacing: 8) {
-            VStack(spacing: 8) {
+        VStack(spacing: 8) {
                 if model.volumes.isEmpty {
                     VStack(spacing: 6) {
                         Image(systemName: "externaldrive.badge.questionmark")
@@ -409,7 +408,6 @@ struct PanelView: View {
                         VolumeCard(vol: vol, model: model)
                     }
                 }
-            }
         }
     }
 
@@ -643,10 +641,7 @@ struct VolumeCard: View {
             .focusable(false)
         }
         .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.primary.opacity(0.045))
-        )
+        .glassSurfaceBackground(cornerRadius: 12)
     }
 }
 
