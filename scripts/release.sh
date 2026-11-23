@@ -69,73 +69,48 @@ rm -f "$APP_ZIP" "$APP_DMG" "$OUTPUT_DIR/SHA256SUMS.txt"
 echo "[release] ZIP"
 ditto -c -k --sequesterRsrc --keepParent "$APP_STAGE" "$APP_ZIP"
 
-echo "[release] 品牌化 DMG (背景图 + Finder 布局, 参考 MarkLeaf create-branded-dmg.sh)"
+echo "[release] 品牌化 DMG (确定性 .DS_Store, dmgbuild 同款字段)"
 DMG_VOLUME_NAME="${NTFSMATE_DMG_VOLUME_NAME:-$APP_NAME $APP_VERSION}"
-SETUP_VOLUME_NAME="$DMG_VOLUME_NAME"
-BUILD_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/ntfsmate-branded-dmg.XXXXXX")"
-STAGE_DIR="$BUILD_ROOT/stage"
-MOUNT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/ntfsmate-dmg-vol.XXXXXX")"
-RW_DMG="$BUILD_ROOT/NTFSMate-rw.dmg"
-ATTACHED=0
+STAGE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/ntfsmate-dmg.XXXXXX")"
+RW_DMG="$(mktemp -u "${TMPDIR:-/tmp}/ntfsmate-rw.XXXXXX").dmg"
 APP_SIZE_KB="$(du -sk "$APP_STAGE" | awk '{print $1}')"
 DMG_SIZE_KB="$((APP_SIZE_KB + 65536))"
-cleanup_dmg() {
-    if [ "${ATTACHED:-0}" = 1 ]; then hdiutil detach "$MOUNT_DIR" >/dev/null 2>&1 || true; fi
-    rm -rf "$BUILD_ROOT" "${DMG_STAGING:-}" "$APP_STAGE" 2>/dev/null || true
-}
+cleanup_dmg() { rm -rf "$STAGE_DIR" "$APP_STAGE"; rm -f "$RW_DMG"; }
 trap cleanup_dmg EXIT
 
-# 1) stage: 应用 + Applications 链接 + 背景
 mkdir -p "$STAGE_DIR/$APP_NAME.app"
 cp -R "$APP_STAGE/" "$STAGE_DIR/$APP_NAME.app/"
 ln -s /Applications "$STAGE_DIR/Applications"
-bash "$HERE/ntfsmate-dmg-layout.sh" prepare "$STAGE_DIR"
+mkdir -p "$STAGE_DIR/.background"
+cp "$HERE/dmg-assets/NTFSMate-dmg-background.png" "$STAGE_DIR/.background/NTFSMate-dmg-background.png"
+python3 "$HERE/set-png-dpi.py" "$STAGE_DIR/.background/NTFSMate-dmg-background.png" 144 >/dev/null
+DPI_W=$(sips -g dpiWidth "$STAGE_DIR/.background/NTFSMate-dmg-background.png" | awk '/dpiWidth/{print $2}')
+[ "$DPI_W" = "144.000" ] || fail "背景图 DPI 写入失败 (got $DPI_W)"
 
-# 2) 建临时可读写 DMG 并挂载 (错误即中止; tail 吞错会产出半成品)
-if ! hdiutil create -volname "$SETUP_VOLUME_NAME" -size "${DMG_SIZE_KB}k" -srcfolder "$STAGE_DIR" \
-    -ov -format UDRW "$RW_DMG" >/dev/null; then
-    fail "hdiutil create 失败"
-fi
-if ! hdiutil attach "$RW_DMG" -mountpoint "$MOUNT_DIR" -nobrowse -quiet; then
-    fail "hdiutil attach 失败"
-fi
+# .DS_Store 需在真实挂载卷上生成 (mac_alias 解析卷 fsid; 临时目录的 fsid 超出 32 位)
+hdiutil create -volname "$DMG_VOLUME_NAME" -size "${DMG_SIZE_KB}k" -srcfolder "$STAGE_DIR" \
+    -ov -format UDRW "$RW_DMG" >/dev/null || fail "hdiutil create 失败"
+if ! hdiutil attach "$RW_DMG" -nobrowse -quiet; then fail "hdiutil attach 失败"; fi
 ATTACHED=1
+MOUNT_DIR="/Volumes/$DMG_VOLUME_NAME"
 
-# 3) 应用 Finder 布局 (AppleScript)。Finder 异步写 .DS_Store, 必须验证落盘,
-#    否则 convert 产出的 DMG 没有背景布局 (实测踩坑)
-LAYOUT_OK=0
-for attempt in 1 2 3; do
-    bash "$HERE/ntfsmate-dmg-layout.sh" apply "$MOUNT_DIR"
-    sync
-    for _ in $(seq 1 10); do
-        [ -f "$MOUNT_DIR/.DS_Store" ] && break
-        sleep 1
-    done
-    if [ -f "$MOUNT_DIR/.DS_Store" ]; then
-        echo "[release] Finder 布局已落盘 (尝试 $attempt)"
-        LAYOUT_OK=1
-        break
-    fi
-    echo "[release] 布局未落盘, 重试 ($attempt/3)..."
-done
-[ "$LAYOUT_OK" = "1" ] || fail ".DS_Store 迟迟未落盘, Finder 布局失败"
+# 确定性 .DS_Store: 图标位置/背景 alias/窗口尺寸一次写死 (venv 由 scripts/setup-dmgvenv.sh 创建)
+VENV_PY="$ROOT/.build/dmgvenv/bin/python"
+[ -x "$VENV_PY" ] || fail "缺少 $VENV_PY (运行 scripts/setup-dmgvenv.sh)"
+"$VENV_PY" "$HERE/make-dmg-dsstore.py" "$MOUNT_DIR" ".background/NTFSMate-dmg-background.png" "$APP_NAME"
+[ -f "$MOUNT_DIR/.DS_Store" ] || fail ".DS_Store 未生成"
 sync
 sleep 1
-
-# 4) 卸载 (必须成功, 否则 convert 会拷出未写盘的卷) 并转换为压缩 UDZO
-if ! hdiutil detach "$MOUNT_DIR" -quiet; then
-    fail "hdiutil detach 失败"
-fi
+if ! hdiutil detach "$MOUNT_DIR" -quiet; then fail "hdiutil detach 失败"; fi
 ATTACHED=0
-if ! hdiutil convert "$RW_DMG" -format UDZO -o "$APP_DMG" -ov >/dev/null; then
-    fail "hdiutil convert 失败"
-fi
 
-# 5) 终验: 挂载最终 DMG, 确认 .DS_Store 与背景图都在
+hdiutil convert "$RW_DMG" -format UDZO -o "$APP_DMG" -ov >/dev/null || fail "hdiutil convert 失败"
+
+# 终验: 挂载最终 DMG, 确认 .DS_Store 与背景图都在
 FINAL_VOL="$(mktemp -d "${TMPDIR:-/tmp}/ntfsmate-verify.XXXXXX")"
 if hdiutil attach "$APP_DMG" -mountpoint "$FINAL_VOL" -nobrowse -quiet; then
-    [ -f "$FINAL_VOL/.DS_Store" ] || { hdiutil detach "$FINAL_VOL" -quiet || true; fail "最终 DMG 缺少 .DS_Store (布局未持久化)"; }
-    [ -f "$FINAL_VOL/.background/$BACKGROUND_NAME" ] || { hdiutil detach "$FINAL_VOL" -quiet || true; fail "最终 DMG 缺少背景图"; }
+    [ -f "$FINAL_VOL/.DS_Store" ] || { hdiutil detach "$FINAL_VOL" -quiet || true; fail "最终 DMG 缺少 .DS_Store"; }
+    [ -f "$FINAL_VOL/.background/NTFSMate-dmg-background.png" ] || { hdiutil detach "$FINAL_VOL" -quiet || true; fail "最终 DMG 缺少背景图"; }
     hdiutil detach "$FINAL_VOL" -quiet
     rmdir "$FINAL_VOL"
     echo "[release] 最终 DMG 布局验证通过"
