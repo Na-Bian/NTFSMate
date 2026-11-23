@@ -479,13 +479,17 @@ struct PanelView: View {
 
         // 记录既有窗口, 创建后定位关于窗口: 抬升层级到菜单栏面板之上并抢 key
         // (抢 key 会让 MenuBarExtra 面板自动收起)
-        // 记录既有窗口, 创建后定位关于窗口: 抢 key (MenuBarExtra 面板会自动收起)
+        // 记录既有窗口, 创建后定位关于窗口: 抬升层级 + 抢 key。
+        // 关于窗口是普通 NSPanel (level=0), 不抬升会被 MenuBarExtra 面板 (高层级) 压住。
+        // 注: 旧版窗口 chrome 的真因是 LC_BUILD_VERSION 的 sdk 字段 (见 docs/M5 §二.0),
+        // 层级抬升与其无关, 是必要手段。
         let before = Set(NSApp.windows.map { ObjectIdentifier($0) })
         NSApp.orderFrontStandardAboutPanel(options: options)
         DispatchQueue.main.async {
             if let about = NSApp.windows.first(where: {
                 !before.contains(ObjectIdentifier($0)) && $0.isVisible
             }) {
+                about.level = NSWindow.Level(rawValue: 2_000)
                 about.makeKeyAndOrderFront(nil)
             }
         }
