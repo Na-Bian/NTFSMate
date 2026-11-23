@@ -49,13 +49,13 @@ let titleAttrs: [NSAttributedString.Key: Any] = [
     .foregroundColor: NSColor(srgbRed: 0.09, green: 0.12, blue: 0.18, alpha: 1),
 ]
 NSAttributedString(string: "NTFSMate", attributes: titleAttrs)
-    .draw(at: NSPoint(x: iconPt.maxX + 13, y: h - 36))
+    .draw(at: NSPoint(x: iconPt.maxX + 13, y: h - 62))
 let subAttrs: [NSAttributedString.Key: Any] = [
     .font: NSFont.monospacedSystemFont(ofSize: 8.5, weight: .semibold),
     .foregroundColor: NSColor(srgbRed: 0.42, green: 0.50, blue: 0.62, alpha: 1),
 ]
 NSAttributedString(string: "READ · WRITE · AUTO-MOUNT NTFS", attributes: subAttrs)
-    .draw(at: NSPoint(x: iconPt.maxX + 13, y: h - 56))
+    .draw(at: NSPoint(x: iconPt.maxX + 13, y: h - 78))
 
 // 3) 分隔细线
 ctx.setFillColor(NSColor.black.withAlphaComponent(0.08).cgColor)
@@ -69,11 +69,11 @@ let dragAttrs: [NSAttributedString.Key: Any] = [
 ]
 let dragText = NSAttributedString(string: "drag to", attributes: dragAttrs)
 let dragSize = dragText.size()
-dragText.draw(at: NSPoint(x: midX - dragSize.width / 2, y: h - 185))
+dragText.draw(at: NSPoint(x: midX - dragSize.width / 2, y: h - 195))
 ctx.setStrokeColor(NSColor(srgbRed: 0.45, green: 0.52, blue: 0.62, alpha: 1).cgColor)
 ctx.setLineWidth(2)
 ctx.setLineCap(.round)
-let arrowY: CGFloat = h - 200
+let arrowY: CGFloat = h - 220
 ctx.move(to: CGPoint(x: midX - 33, y: arrowY))
 ctx.addLine(to: CGPoint(x: midX + 33, y: arrowY))
 ctx.strokePath()

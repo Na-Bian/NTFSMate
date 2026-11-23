@@ -90,9 +90,10 @@ DPI_W=$(sips -g dpiWidth "$STAGE_DIR/.background/NTFSMate-dmg-background.png" | 
 # .DS_Store 需在真实挂载卷上生成 (mac_alias 解析卷 fsid; 临时目录的 fsid 超出 32 位)
 hdiutil create -volname "$DMG_VOLUME_NAME" -size "${DMG_SIZE_KB}k" -srcfolder "$STAGE_DIR" \
     -ov -format UDRW "$RW_DMG" >/dev/null || fail "hdiutil create 失败"
-if ! hdiutil attach "$RW_DMG" -nobrowse -quiet; then fail "hdiutil attach 失败"; fi
+# 挂到唯一构建挂载点 (用户可能挂着同名的发行 DMG, 直接用卷名会写错卷)
+MOUNT_DIR="/Volumes/ntfsmate-build-$$"
+if ! hdiutil attach "$RW_DMG" -mountpoint "$MOUNT_DIR" -nobrowse -quiet; then fail "hdiutil attach 失败"; fi
 ATTACHED=1
-MOUNT_DIR="/Volumes/$DMG_VOLUME_NAME"
 
 # 确定性 .DS_Store: 图标位置/背景 alias/窗口尺寸一次写死 (venv 由 scripts/setup-dmgvenv.sh 创建)
 VENV_PY="$ROOT/.build/dmgvenv/bin/python"
