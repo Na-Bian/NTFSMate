@@ -1,10 +1,11 @@
-// make-dmg-background.swift — NTFSMate 品牌化 DMG 背景图绘制 (1280×800 @2x, 逻辑 640×400)
-// 产物: scripts/dmg-assets/NTFSMate-dmg-background.png
-// 设计: MarkLeaf 式构图 — 内容集中于中央安全区 (窗口即使轻微裁切也不损失内容)
+// make-dmg-background.swift — NTFSMate 品牌化 DMG 背景 (1280×800 px @144dpi = 640×400 pt)
+// Finder 按原始尺寸 1:1 绘制背景图, 因此图的 pt 尺寸必须【恰好等于】窗口 bounds (640×400),
+// 内容坐标与 Finder 图标位置 (NTFSMate {165,220} / Applications {475,220}) 对位。
 // 运行: swift scripts/make-dmg-background.swift   (项目根目录)
+// 输出 72dpi PNG, 144dpi 由 ntfsmate-dmg-layout.sh prepare 步骤用 sips 写入。
 import AppKit
 
-let W: CGFloat = 1600, H: CGFloat = 1000   // 逻辑 800×500 — 大于窗口, 裁切只裁边缘
+let W: CGFloat = 1280, H: CGFloat = 800   // px;  pt = px / 2
 
 let outputDir = URL(fileURLWithPath: "scripts/dmg-assets")
 try? FileManager.default.createDirectory(at: outputDir, withIntermediateDirectories: true)
@@ -18,82 +19,78 @@ NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
 defer { NSGraphicsContext.restoreGraphicsState() }
 
 let ctx = NSGraphicsContext.current!.cgContext
+// 统一 pt 坐标系绘制 (pt = 逻辑窗口坐标; 1pt = 2px)
+let S: CGFloat = 2
+ctx.scaleBy(x: S, y: S)
+let w = W / S, h = H / S   // 640 × 400 pt
 
-// 1) 全幅深蓝渐变底 (窗口放大裁切时只是底色延伸, 内容无损失)
-let bg = CGRect(x: 0, y: 0, width: W, height: H)
-// 浅色主题: 系统默认浅色模式下 Finder 标签是黑字, 底色必须亮
+// 1) 浅色渐变底 (Finder 图标标签为黑字, 底色必须亮)
+let bg = CGRect(x: 0, y: 0, width: w, height: h)
 ctx.setFillColor(NSColor(srgbRed: 0.965, green: 0.973, blue: 0.985, alpha: 1).cgColor)
 ctx.fill(bg)
 let grad = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: [
     NSColor(srgbRed: 0.93, green: 0.945, blue: 0.97, alpha: 1).cgColor,
     NSColor(srgbRed: 0.88, green: 0.90, blue: 0.945, alpha: 1).cgColor,
 ] as CFArray, locations: [0, 1])!
-ctx.drawLinearGradient(grad, start: CGPoint(x: 0, y: H), end: CGPoint(x: W, y: 0), options: [])
+ctx.drawLinearGradient(grad, start: CGPoint(x: 0, y: h), end: CGPoint(x: w, y: 0), options: [])
 
-// 2) 品牌行 (图标 + 名称 + 副标)
-let iconSide: CGFloat = 104
-let iconX: CGFloat = 150
-let iconYTop: CGFloat = 62
-let iconRect = CGRect(x: iconX, y: H - iconYTop - iconSide, width: iconSide, height: iconSide)
+// 2) 品牌行 (左上): 图标 52pt + 标题 + 副标
+let iconSide: CGFloat = 52
+let iconPt = CGRect(x: 75, y: h - 82, width: iconSide, height: iconSide)   // 顶边距 30pt
 if let icon = NSImage(contentsOfFile: "Resources/AppIcon.iconset/icon_512x512.png") {
     ctx.saveGState()
-    let path = CGPath(roundedRect: iconRect, cornerWidth: 22, cornerHeight: 22, transform: nil)
+    let path = CGPath(roundedRect: iconPt, cornerWidth: 11, cornerHeight: 11, transform: nil)
     ctx.addPath(path); ctx.clip()
-    icon.draw(in: iconRect)
+    icon.draw(in: iconPt)
     ctx.restoreGState()
 }
-// AppKit y 轴向上: 标题在副标上方 → 标题 y 更大
-let titleY = H - iconYTop - 48      // 标题基线 (上)
-let subY = titleY - 44              // 副标基线 (下)
 let titleAttrs: [NSAttributedString.Key: Any] = [
-    .font: NSFont.systemFont(ofSize: 46, weight: .bold),
+    .font: NSFont.systemFont(ofSize: 23, weight: .bold),
     .foregroundColor: NSColor(srgbRed: 0.09, green: 0.12, blue: 0.18, alpha: 1),
 ]
 NSAttributedString(string: "NTFSMate", attributes: titleAttrs)
-    .draw(at: NSPoint(x: iconRect.maxX + 26, y: titleY))
+    .draw(at: NSPoint(x: iconPt.maxX + 13, y: h - 36))
 let subAttrs: [NSAttributedString.Key: Any] = [
-    .font: NSFont.monospacedSystemFont(ofSize: 16, weight: .semibold),
+    .font: NSFont.monospacedSystemFont(ofSize: 8.5, weight: .semibold),
     .foregroundColor: NSColor(srgbRed: 0.42, green: 0.50, blue: 0.62, alpha: 1),
 ]
 NSAttributedString(string: "READ · WRITE · AUTO-MOUNT NTFS", attributes: subAttrs)
-    .draw(at: NSPoint(x: iconRect.maxX + 26, y: subY))
+    .draw(at: NSPoint(x: iconPt.maxX + 13, y: h - 56))
 
-// 3) 分隔细线 (安全区内, 不通栏)
+// 3) 分隔细线
 ctx.setFillColor(NSColor.black.withAlphaComponent(0.08).cgColor)
-ctx.fill(CGRect(x: 140, y: H - 200, width: 1000, height: 2))
+ctx.fill(CGRect(x: 70, y: h - 100, width: 500, height: 1))
 
-// 4) "drag to →" 引导 (逻辑居中)
-let midY: CGFloat = H * 0.47
+// 4) "drag to →": 两图标 (x=165 与 x=475) 中点 x=320, 文字在上、箭头在下指右
+let midX: CGFloat = 320
 let dragAttrs: [NSAttributedString.Key: Any] = [
-    .font: NSFont.systemFont(ofSize: 32, weight: .medium),
+    .font: NSFont.systemFont(ofSize: 15, weight: .medium),
     .foregroundColor: NSColor(srgbRed: 0.42, green: 0.48, blue: 0.58, alpha: 1),
 ]
 let dragText = NSAttributedString(string: "drag to", attributes: dragAttrs)
 let dragSize = dragText.size()
-dragText.draw(at: NSPoint(x: W / 2 - dragSize.width / 2, y: midY))
+dragText.draw(at: NSPoint(x: midX - dragSize.width / 2, y: h - 185))
 ctx.setStrokeColor(NSColor(srgbRed: 0.45, green: 0.52, blue: 0.62, alpha: 1).cgColor)
-ctx.setLineWidth(4)
+ctx.setLineWidth(2)
 ctx.setLineCap(.round)
-ctx.move(to: CGPoint(x: W / 2 - 66, y: midY - 44))
-ctx.addLine(to: CGPoint(x: W / 2 + 66, y: midY - 44))
+let arrowY: CGFloat = h - 200
+ctx.move(to: CGPoint(x: midX - 33, y: arrowY))
+ctx.addLine(to: CGPoint(x: midX + 33, y: arrowY))
 ctx.strokePath()
-ctx.move(to: CGPoint(x: W / 2 + 52, y: midY - 56))
-ctx.addLine(to: CGPoint(x: W / 2 + 66, y: midY - 44))
-ctx.addLine(to: CGPoint(x: W / 2 + 52, y: midY - 32))
+ctx.move(to: CGPoint(x: midX + 26, y: arrowY + 6))
+ctx.addLine(to: CGPoint(x: midX + 33, y: arrowY))
+ctx.addLine(to: CGPoint(x: midX + 26, y: arrowY - 6))
 ctx.strokePath()
 
-// 5) 底部说明
+// 5) 底部说明 (居中)
 let footAttrs: [NSAttributedString.Key: Any] = [
-    .font: NSFont.systemFont(ofSize: 20),
+    .font: NSFont.systemFont(ofSize: 10),
     .foregroundColor: NSColor(srgbRed: 0.48, green: 0.54, blue: 0.64, alpha: 1),
 ]
 let foot = NSAttributedString(string: "Drag NTFSMate into Applications to install", attributes: footAttrs)
 let footSize = foot.size()
-foot.draw(at: NSPoint(x: W / 2 - footSize.width / 2, y: 46))
+foot.draw(at: NSPoint(x: w / 2 - footSize.width / 2, y: 20))
 
 let png = rep.representation(using: .png, properties: [:])!
 try! png.write(to: outFile)
-// ⚠️ 本脚本只输出 72dpi PNG。144dpi 元数据 (@2x 约定) 由
-// ntfsmate-dmg-layout.sh prepare 步骤用 sips 强制写入 —
-// Finder 按 pt 渲染背景图, 无 DPI 时 1px=1pt 会放大一倍
-print("生成: \(outFile.path) (72dpi, 由 dmg-layout prepare 写入 144dpi)")
+print("生成: \(outFile.path) (72dpi; 144dpi 由 dmg-layout prepare 写入)")
